@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ArtGallery360 — Galerie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600&display=swap%22 rel="stylesheet">
+<style>
+  :root{
+    --beige:#f3e9db;
+    --cream:#fffaf3;
+    --bg:#ffffff;
+    --muted:#6b6b6b;
+    --accent:#0b0b0b;
+    --gold:#cbb48a;
+    --card-shadow: 0 8px 24px rgba(11,11,11,0.06);
+    --gap:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    background:linear-gradient(180deg,var(--cream) 0%, var(--bg) 40%);
+    color:var(--accent);
+    -webkit-font-smoothing:antialiased;
+    padding:28px;
+  }
+ 
+  /* Header with giant centered title */
+  header{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:18px}
+  .brand-title{font-family:"Playfair Display",serif;font-size:56px;letter-spacing:0.6px;color:var(--accent);margin:0;background:linear-gradient(90deg,var(--beige),#fff 60%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .subtitle{color:var(--muted);font-size:14px;margin:0}
+ 
+  /* Main layout */
+  .main{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
+  @media (max-width:980px){.main{grid-template-columns:1fr}}
+ 
+  /* Sidebar filters */
+  .sidebar{background:transparent;padding:18px}
+  .panel{background:#fff;border-radius:12px;padding:14px;border:1px solid rgba(11,11,11,0.04);box-shadow:var(--card-shadow)}
+  .filter-group{margin-bottom:12px}
+  label{display:block;font-weight:600;margin-bottom:8px}
+  select,input[type=checkbox],input[type=range]{width:100%;padding:8px;border-radius:8px;border:1px solid #eee;background:#fafafa}
+  .small{font-size:13px;color:var(--muted)}
+ 
+  /* Controls */
+  .controls{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .searchbox{display:flex;gap:8px;align-items:center;background:transparent}
+  .searchbox input{width:440px;max-width:60vw;padding:12px 14px;border-radius:10px;border:1px solid rgba(11,11,11,0.06);font-size:15px}
+  .btn{background:var(--accent);color:#fff;border:0;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn.secondary{background:transparent;color:var(--accent);border:1px solid #eee}
+ 
+  /* Gallery */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+  .card{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #f3f3f0;box-shadow:0 8px 18px rgba(11,11,11,0.06);display:flex;flex-direction:column}
+  .thumb{aspect-ratio:4/3;background:linear-gradient(180deg,#f8f6f1,#fff);display:grid;place-items:center}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .meta{padding:12px;display:flex;flex-direction:column;gap:8px}
+  .title{font-family:"Playfair Display",serif;font-size:16px;margin:0}
+  .subtitle{font-size:13px;color:var(--muted)}
+  .meta .actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+ 
+  /* Pagination */
+  .pager{display:flex;gap:8px;justify-content:center;margin-top:18px;align-items:center}
+  .pager button{padding:8px 10px;border-radius:8px;border:1px solid #eee;background:#fff;cursor:pointer}
+ 
+  /* Favorites */
+  .fav-count{background:var(--accent);color:#fff;padding:6px 10px;border-radius:999px;font-weight:700}
+ 
+  /* Modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;place-items:center;padding:36px;z-index:60}
+  .modal{width:min(1000px,98%);max-height:86vh;overflow:auto;background:#fff;padding:18px;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,0.25)}
+  .modal-grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+  .modal img{width:100%;height:auto;border-radius:6px;display:block}
+  .close{background:transparent;border:0;font-size:18px;cursor:pointer;color:var(--muted)}
+ 
+  /* small utility */
+  .muted{color:var(--muted)}
+ 
+</style>
+</head>
+<body>
+<header>
+  <h1 class="brand-title">ArtGallery360</h1>
+  <p class="subtitle">Galerie interactive — explore le monde, une peinture à la fois</p>
+</header>
+ 
+<main class="main">
+  <aside class="sidebar">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-weight:700">Filtres</div>
+        <div class="small">Affinez les résultats</div>
+      </div>
+ 
+      <div class="filter-group">
+        <label for="deptSelect">Département</label>
+        <select id="deptSelect"><option value="">Tous</option></select>
+      </div>
+ 
+      <div class="filter-group">
+        <label>Options</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="checkbox" id="hasImage" /> <label for="hasImage" class="small">Avec image</label>
+        </div>
+      </div>
+ 
+      <div class="filter-group">
+        <label for="periodSelect">Période</label>
+        <select id="periodSelect">
+          <option value="">Toutes</option>
+          <option value="before1500">Avant 1500</option>
+          <option value="1500-1800">1500 — 1800</option>
+          <option value="after1800">Après 1800</option>
+        </select>
+      </div>
+ 
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="clearFilters" class="btn secondary">Réinitialiser</button>
+        <button id="randomBtn" class="btn">Œuvres aléatoires</button>
+      </div>
+ 
+    </div>
+  </aside>
+ 
+  <section>
+    <div class="panel" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div class="searchbox">
+        <input id="searchInput" placeholder="Rechercher une œuvre, un artiste, ex: Van Gogh, sunflower" />
+        <button id="searchBtn" class="btn">Rechercher</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button id="openFav" class="btn secondary">Favoris</button>
+        <div class="fav-count" id="favCount">0</div>
+      </div>
+    </div>
+ 
+    <div id="status" class="muted" style="margin-bottom:10px">Tapez une recherche ou cliquez sur Œuvres aléatoires</div>
+    <div class="grid" id="grid"></div>
+    <div class="pager" id="pager"></div>
+  </section>
+</main>
+ 
+<!-- Modal détail -->
+<div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
+  <div class="modal" role="document">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h2 id="modalTitle" style="margin:0;font-family:'Playfair Display',serif"></h2>
+        <div id="modalSub" class="small"></div>
+      </div>
+      <div>
+        <button id="modalFavBtn" class="btn">Ajouter</button>
+        <button id="modalClose" class="close">✕</button>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+    <div class="modal-grid">
+      <div>
+        <img id="modalImg" alt="Image oeuvre" />
+      </div>
+      <div>
+        <div style="font-size:14px;color:var(--muted);margin-bottom:12px">
+          <div><strong>Artiste:</strong> <span id="modalArtist"></span></div>
+          <div><strong>Date:</strong> <span id="modalDate"></span></div>
+          <div><strong>Département:</strong> <span id="modalDept"></span></div>
+          <div style="margin-top:8px"><strong>Accès image:</strong> <span id="modalCredit"></span></div>
+        </div>
+        <div id="modalDesc" style="white-space:pre-wrap;font-size:14px;color:#222"></div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- Favoris modal -->
+<div id="favModal" class="modal-backdrop" style="display:none;z-index:61">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0;font-family:'Playfair Display',serif">Vos favoris</h2>
+      <div>
+        <button id="clearAllFavs" class="btn secondary">Vider</button>
+        <button id="closeFavModal" class="close">✕</button>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+    <div id="favList"></div>
+  </div>
+</div>
+ 
+<script>
+const BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
+const ITEMS_PER_PAGE = 10;
+let currentIDs = [];
+let loadedObjects = {};
+let currentPage = 1;
+let totalPages = 0;
+let departments = [];
+let currentQuery = "";
+ 
+// DOM
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const grid = document.getElementById("grid");
+const pager = document.getElementById("pager");
+const status = document.getElementById("status");
+const deptSelect = document.getElementById("deptSelect");
+const hasImageCheckbox = document.getElementById("hasImage");
+const periodSelect = document.getElementById("periodSelect");
+const clearFiltersBtn = document.getElementById("clearFilters");
+const randomBtn = document.getElementById("randomBtn");
+const favCount = document.getElementById("favCount");
+const openFav = document.getElementById("openFav");
+ 
+// Modal elements
+const modalBackdrop = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const modalSub = document.getElementById("modalSub");
+const modalImg = document.getElementById("modalImg");
+const modalArtist = document.getElementById("modalArtist");
+const modalDate = document.getElementById("modalDate");
+const modalDept = document.getElementById("modalDept");
+const modalDesc = document.getElementById("modalDesc");
+const modalCredit = document.getElementById("modalCredit");
+const modalClose = document.getElementById("modalClose");
+const modalFavBtn = document.getElementById("modalFavBtn");
+ 
+// Favorites modal
+const favModal = document.getElementById("favModal");
+const favList = document.getElementById("favList");
+const closeFavModal = document.getElementById("closeFavModal");
+const clearAllFavs = document.getElementById("clearAllFavs");
+ 
+// Favorites localStorage helpers
+function getFavorites(){try{return JSON.parse(localStorage.getItem("ag_favorites")||"[]")}catch(e){return []}}
+function saveFavorites(arr){localStorage.setItem("ag_favorites", JSON.stringify(arr)); updateFavCount();}
+function isFavorited(id){return getFavorites().includes(String(id));}
+function toggleFavorite(id, objectData){let favs=getFavorites().map(String);const sid=String(id);if(favs.includes(sid)){favs=favs.filter(x=>x!==sid);saveFavorites(favs);}else{favs.push(sid);saveFavorites(favs);loadedObjects[sid]=objectData||loadedObjects[sid]||null;}}
+function updateFavCount(){favCount.textContent = getFavorites().length}
+ 
+// API helpers
+async function fetchJSON(url){const resp=await fetch(url);if(!resp.ok) throw new Error('network');return resp.json();}
+ 
+async function loadDepartments(){try{const d=await fetchJSON(`${BASE}/departments`);departments=d.departments||[];departments.forEach(dep=>{const opt=document.createElement('option');opt.value=dep.departmentId;opt.textContent=dep.displayName;deptSelect.appendChild(opt);});}catch(e){console.error(e);}}
+ 
+// Search
+async function doSearch(query){currentQuery=query?.trim();if(!currentQuery){status.textContent='Entrez un mot-clé (ex: Monet, portrait)';return}status.textContent='Recherche...';grid.innerHTML='';currentPage=1;loadedObjects={};try{const url=`${BASE}/search?q=${encodeURIComponent(currentQuery)}`;const res=await fetchJSON(url);currentIDs=res.objectIDs||[];if(!currentIDs||currentIDs.length===0){status.textContent='Aucun résultat.';pager.innerHTML='';return;}status.textContent=`${currentIDs.length} résultats trouvés — chargement des images...`; // preload first 200 to make filters responsive
+const toPreload=currentIDs.slice(0,200);
+await Promise.all(toPreload.map(id=>loadObject(id).catch(()=>null)));
+applyFiltersAndRender();}catch(e){console.error(e);status.textContent='Erreur lors de la recherche.'}}
+ 
+async function loadObject(id){const sid=String(id); if(loadedObjects[sid]) return loadedObjects[sid]; try{const data=await fetchJSON(`${BASE}/objects/${sid}`);loadedObjects[sid]=data;return data;}catch(e){loadedObjects[sid]=null;return null}}
+ 
+function applyFiltersAndRender(){const filtered=[];for(const id of currentIDs){const obj=loadedObjects[id]; if(!obj){ // include un-fetched only if no filters active
+if(!deptSelect.value && !hasImageCheckbox.checked && !periodSelect.value){filtered.push(id);} continue;} // department
+if(deptSelect.value){ if(String(obj.departmentId)!==String(deptSelect.value)) continue; }
+if(hasImageCheckbox.checked){ if(!obj.primaryImage && !obj.primaryImageSmall) continue; }
+const p = periodSelect.value; if(p){ const begin = obj.objectBeginDate||-9999; const end = obj.objectEndDate||begin; if(p==='before1500'){ if(end>=1500) continue; } else if(p==='1500-1800'){ if(end<1500 || begin>1800) continue; } else if(p==='after1800'){ if(begin<=1800) continue; } }
+filtered.push(id);
+}
+if(filtered.length===0){ status.textContent='Aucun résultat après application des filtres.'; grid.innerHTML=''; pager.innerHTML=''; return; }
+totalPages = Math.ceil(filtered.length/ITEMS_PER_PAGE)||1; renderPage(filtered, currentPage);}
+ 
+async function renderPage(filteredIds, page){grid.innerHTML=''; const start=(page-1)*ITEMS_PER_PAGE; const pageIds=filteredIds.slice(start,start+ITEMS_PER_PAGE);
+await Promise.all(pageIds.map(id=>loadObject(id).catch(()=>null)));
+for(const id of pageIds){const obj = loadedObjects[id] || {}; const card=document.createElement('article');card.className='card'; const imgSrc = obj.primaryImageSmall || obj.primaryImage || ''; card.innerHTML = `
+<div class="thumb">${imgSrc?`<img src="${imgSrc}" alt="${escapeHtml(obj.title||'')}">`:`<div style="padding:20px;color:var(--muted)">Pas d'image</div>`}</div>
+<div class="meta">
+<div><div class="title">${escapeHtml(obj.title||'Titre inconnu')}</div>
+<div class="subtitle">${escapeHtml(obj.artistDisplayName||'Artiste inconnu')} • ${escapeHtml(obj.objectDate||'')}</div></div>
+<div class="actions"><div><button data-id="${id}" class="btn viewBtn">Voir</button></div>
+<div><button data-id="${id}" class="btn secondary favBtn">${isFavorited(id)?'Retirer':'Favori'}</button></div></div></div>`;
+grid.appendChild(card);
+}
+renderPager(filteredIds.length, page);
+status.textContent = `Affichage ${start+1} — ${Math.min(start+pageIds.length, filteredIds.length)} sur ${filteredIds.length} résultats.`;
+document.querySelectorAll('.viewBtn').forEach(b=>b.onclick=async()=>{await openModalWithId(b.dataset.id)});
+document.querySelectorAll('.favBtn').forEach(b=>b.onclick=async()=>{const id=b.dataset.id; const obj=loadedObjects[id]||await loadObject(id).catch(()=>null); toggleFavorite(id,obj); b.textContent = isFavorited(id)?'Retirer':'Favori';}); }
+ 
+function renderPager(totalItems,page){pager.innerHTML=''; totalPages = Math.ceil(totalItems/ITEMS_PER_PAGE)||1; const prev=document.createElement('button'); prev.textContent='← Préc.'; prev.disabled = page<=1; prev.onclick=()=>{currentPage=Math.max(1,page-1); applyFiltersAndRender();}; pager.appendChild(prev);
+const maxButtons=7; let start=Math.max(1, page-Math.floor(maxButtons/2)); let end=Math.min(totalPages, start+maxButtons-1); if(end-start<maxButtons-1) start = Math.max(1, end-maxButtons+1);
+for(let p=start;p<=end;p++){const btn=document.createElement('button'); btn.textContent=p; btn.disabled=p===page; btn.onclick=()=>{currentPage=p; applyFiltersAndRender();}; pager.appendChild(btn);} const next=document.createElement('button'); next.textContent='Suiv. →'; next.disabled=page>=totalPages; next.onclick=()=>{currentPage=Math.min(totalPages,page+1); applyFiltersAndRender();}; pager.appendChild(next);}
+ 
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[m]); }
+ 
+async function openModalWithId(id){const obj = loadedObjects[id] || await loadObject(id).catch(()=>null); if(!obj){ alert('Détails indisponibles.'); return; } modalTitle.textContent = obj.title || 'Titre inconnu'; modalSub.textContent = `${obj.artistDisplayName || 'Artiste inconnu'} — ${obj.objectDate || ''}`; modalImg.src = obj.primaryImage || obj.primaryImageSmall || ''; modalArtist.textContent = obj.artistDisplayName || '—'; modalDate.textContent = obj.objectDate || '—'; modalDept.textContent = obj.department || '—'; modalDesc.textContent = obj.creditLine || obj.medium || ''; modalCredit.textContent = obj.isPublicDomain ? 'Open Access' : 'Droits'; modalFavBtn.textContent = isFavorited(id)?'Retirer des favoris':'Ajouter aux favoris'; modalFavBtn.onclick = ()=>{ toggleFavorite(id,obj); modalFavBtn.textContent = isFavorited(id)?'Retirer des favoris':'Ajouter aux favoris'; }; modalBackdrop.style.display='grid'; modalBackdrop.setAttribute('aria-hidden','false'); }
+ 
+modalClose.onclick=()=>{modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true');}; modalBackdrop.onclick=(e)=>{ if(e.target===modalBackdrop) modalBackdrop.style.display='none'; };
+ 
+openFav.onclick=()=>{ renderFavorites(); favModal.style.display='grid'; favModal.setAttribute('aria-hidden','false'); };
+closeFavModal.onclick=()=>{ favModal.style.display='none'; favModal.setAttribute('aria-hidden','true'); };
+clearAllFavs.onclick=()=>{ if(confirm('Vider tous les favoris ?')){ saveFavorites([]); renderFavorites(); } };
+ 
+async function renderFavorites(){ favList.innerHTML=''; const favs=getFavorites(); if(favs.length===0){ favList.innerHTML=`<div class='small' style='padding:18px'>Aucun favori.</div>`; updateFavCount(); return;} await Promise.all(favs.map(id=>loadObject(id).catch(()=>null))); favs.forEach(id=>{ const obj=loadedObjects[id]||{}; const el=document.createElement('div'); el.style.display='flex'; el.style.gap='12px'; el.style.alignItems='center'; el.style.padding='12px 0'; el.style.borderBottom='1px solid #f3f3f0'; el.innerHTML = `<div style='width:90px;flex:0 0 90px;border-radius:6px;overflow:hidden;background:#f7f7f7'>${obj.primaryImageSmall?`<img src='${obj.primaryImageSmall}' style='width:100%;height:100%;object-fit:cover' alt=''>`:`<div style='padding:14px;color:var(--muted)'>Pas d'image</div>`}</div><div style='flex:1'><div style='font-weight:600'>${escapeHtml(obj.title||'Titre')}</div><div class='small'>${escapeHtml(obj.artistDisplayName||'Artiste')}</div></div><div style='display:flex;gap:8px'><button class='btn openFavItem' data-id='${id}'>Voir</button><button class='btn secondary remFavItem' data-id='${id}'>Suppr.</button></div>`; favList.appendChild(el); }); document.querySelectorAll('.openFavItem').forEach(b=>b.onclick=async()=>{ favModal.style.display='none'; await openModalWithId(b.dataset.id); }); document.querySelectorAll('.remFavItem').forEach(b=>b.onclick=()=>{ const id=b.dataset.id; let arr=getFavorites(); arr=arr.filter(x=>x!==id); saveFavorites(arr); renderFavorites(); }); updateFavCount(); }
+ 
+// Random artworks
+async function loadRandom(){ status.textContent='Chargement d\'œuvres aléatoires…'; try{ const data = await fetchJSON(`${BASE}/objects`); const all = data.objectIDs || []; const picked=[]; const max = Math.min(200, all.length); while(picked.length < 80){ const i = Math.floor(Math.random()*all.length); const id = all[i]; if(!picked.includes(id)) picked.push(id); if(picked.length>=max) break; } currentIDs = picked; loadedObjects = {}; await Promise.all(picked.map(id=>loadObject(id).catch(()=>null))); currentPage=1; applyFiltersAndRender(); }catch(e){console.error(e);status.textContent='Impossible de charger œuvres aléatoires.'}}
+ 
+// Events
+searchBtn.onclick = ()=> doSearch(searchInput.value);
+searchInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSearch(searchInput.value); });
+clearFiltersBtn.onclick = ()=>{ deptSelect.value=''; hasImageCheckbox.checked=false; periodSelect.value=''; applyFiltersAndRender(); };
+randomBtn.onclick = loadRandom; deptSelect.onchange = ()=> applyFiltersAndRender(); hasImageCheckbox.onchange = ()=> applyFiltersAndRender(); periodSelect.onchange = ()=> applyFiltersAndRender();
+ 
+// Init
+(async function init(){ updateFavCount(); await loadDepartments(); status.textContent='Chargement d\'une sélection...'; try{ const res = await fetchJSON(`${BASE}/search?hasImages=true&q=painting`); currentIDs = (res.objectIDs||[]).slice(0,120); await Promise.all(currentIDs.map(id=>loadObject(id).catch(()=>null))); currentPage=1; applyFiltersAndRender(); }catch(e){ status.textContent='Prêt — entrez une recherche.'; console.error(e); }})();
+ 
+</script>
+</body>
+</html>
+ 
