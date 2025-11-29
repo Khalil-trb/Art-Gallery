@@ -9,9 +9,12 @@
 </head>
 <body>
 <header>
-  <h1 class="brand-title">ArtGallery</h1>
-  <p class="subtitle">Galerie interactive — explore le monde, une peinture à la fois</p>
+  <div class="header-content">
+    <h1 class="brand-title">ArtGallery360</h1>
+    <p class="subtitle">Galerie interactive — explore le monde, une peinture à la fois</p>
+  </div>
 </header>
+
  
 <main class="main">
   <aside class="sidebar">
@@ -117,7 +120,7 @@
  
 <script>
 const BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 6;
 let currentIDs = [];
 let loadedObjects = {};
 let currentPage = 1;
@@ -178,15 +181,42 @@ applyFiltersAndRender();}catch(e){console.error(e);status.textContent='Erreur lo
  
 async function loadObject(id){const sid=String(id); if(loadedObjects[sid]) return loadedObjects[sid]; try{const data=await fetchJSON(`${BASE}/objects/${sid}`);loadedObjects[sid]=data;return data;}catch(e){loadedObjects[sid]=null;return null}}
  
-function applyFiltersAndRender(){const filtered=[];for(const id of currentIDs){const obj=loadedObjects[id]; if(!obj){ // include un-fetched only if no filters active
-if(!deptSelect.value && !hasImageCheckbox.checked && !periodSelect.value){filtered.push(id);} continue;} // department
-if(deptSelect.value){ if(String(obj.departmentId)!==String(deptSelect.value)) continue; }
-if(hasImageCheckbox.checked){ if(!obj.primaryImage && !obj.primaryImageSmall) continue; }
-const p = periodSelect.value; if(p){ const begin = obj.objectBeginDate||-9999; const end = obj.objectEndDate||begin; if(p==='before1500'){ if(end>=1500) continue; } else if(p==='1500-1800'){ if(end<1500 || begin>1800) continue; } else if(p==='after1800'){ if(begin<=1800) continue; } }
-filtered.push(id);
+function applyFiltersAndRender() {
+    const filtered = [];
+
+    for (const id of currentIDs) {
+        const obj = loadedObjects[id];
+        if (!obj) continue; // skip if not loaded
+
+        // Skip objects with no image
+        if (!obj.primaryImage && !obj.primaryImageSmall) continue;
+
+        // Existing filters
+        if (deptSelect.value && String(obj.departmentId) !== String(deptSelect.value)) continue;
+
+        const p = periodSelect.value;
+        if (p) {
+            const begin = obj.objectBeginDate || -9999;
+            const end = obj.objectEndDate || begin;
+            if (p === 'before1500' && end >= 1500) continue;
+            if (p === '1500-1800' && (begin > 1800 || end < 1500)) continue;
+            if (p === 'after1800' && begin <= 1800) continue;
+        }
+
+        filtered.push(id);
+    }
+
+    if (filtered.length === 0) {
+        status.textContent = 'Aucun résultat avec image.';
+        grid.innerHTML = '';
+        pager.innerHTML = '';
+        return;
+    }
+
+    totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+    renderPage(filtered, currentPage);
 }
-if(filtered.length===0){ status.textContent='Aucun résultat après application des filtres.'; grid.innerHTML=''; pager.innerHTML=''; return; }
-totalPages = Math.ceil(filtered.length/ITEMS_PER_PAGE)||1; renderPage(filtered, currentPage);}
+
  
 async function renderPage(filteredIds, page){grid.innerHTML=''; const start=(page-1)*ITEMS_PER_PAGE; const pageIds=filteredIds.slice(start,start+ITEMS_PER_PAGE);
 await Promise.all(pageIds.map(id=>loadObject(id).catch(()=>null)));
@@ -230,7 +260,7 @@ clearFiltersBtn.onclick = ()=>{ deptSelect.value=''; hasImageCheckbox.checked=fa
 randomBtn.onclick = loadRandom; deptSelect.onchange = ()=> applyFiltersAndRender(); hasImageCheckbox.onchange = ()=> applyFiltersAndRender(); periodSelect.onchange = ()=> applyFiltersAndRender();
  
 // Init
-(async function init(){ updateFavCount(); await loadDepartments(); status.textContent='Chargement d\'une sélection...'; try{ const res = await fetchJSON(`${BASE}/search?hasImages=true&q=painting`); currentIDs = (res.objectIDs||[]).slice(0,120); await Promise.all(currentIDs.map(id=>loadObject(id).catch(()=>null))); currentPage=1; applyFiltersAndRender(); }catch(e){ status.textContent='Prêt — entrez une recherche.'; console.error(e); }})();
+(async function init(){ updateFavCount(); await loadDepartments(); status.textContent='Chargement d\'une sélection...'; try{ const res = await fetchJSON(`${BASE}/search?hasImages=true&q=painting`); currentIDs = (res.objectIDs||[]).slice(0,50); await Promise.all(currentIDs.map(id=>loadObject(id).catch(()=>null))); currentPage=1; applyFiltersAndRender(); }catch(e){ status.textContent='Prêt — entrez une recherche.'; console.error(e); }})();
  
 </script>
 </body>

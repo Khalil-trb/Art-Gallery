@@ -10,16 +10,20 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0;
-    font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
-    background:linear-gradient(180deg,var(--cream) 0%, var(--bg) 40%);
-    color:var(--accent);
-    -webkit-font-smoothing:antialiased;
-    padding:28px;
-  }
  
-  /* Header with giant centered title */
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background-image: url("/assets/galerie2.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* this keeps it still */
+    background-position: center;   /* optional, to center the image */
+    color: var(--accent);
+    -webkit-font-smoothing: antialiased;
+    padding: 28px; /* you can keep it, but note it offsets content from edges */
+} 
+ /* Header with giant centered title */
   header{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:18px}
   .brand-title{font-family:"Playfair Display",serif;font-size:56px;letter-spacing:0.6px;color:var(--accent);margin:0;background:linear-gradient(90deg,var(--beige),#fff 60%);-webkit-background-clip:text;background-clip:text;color:transparent}
   .subtitle{color:var(--muted);font-size:14px;margin:0}
@@ -46,9 +50,22 @@
   /* Gallery */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
   .card{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #f3f3f0;box-shadow:0 8px 18px rgba(11,11,11,0.06);display:flex;flex-direction:column}
-  .thumb{aspect-ratio:4/3;background:linear-gradient(180deg,#f8f6f1,#fff);display:grid;place-items:center}
-  .thumb img{width:100%;height:100%;object-fit:cover}
-  .meta{padding:12px;display:flex;flex-direction:column;gap:8px}
+  .thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* make all thumbnails square */
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg,#f8f6f1,#fff);
+}
+
+.thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* fills the square, crops if necessary */
+}
+
+  .meta{padding: 6px;display:flex;flex-direction:column;gap:8px}
   .title{font-family:"Playfair Display",serif;font-size:16px;margin:0}
   .subtitle{font-size:13px;color:var(--muted)}
   .meta .actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
