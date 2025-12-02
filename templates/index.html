@@ -10,10 +10,25 @@
 <body>
 <header>
   <div class="header-content">
-    <h1 class="brand-title">ArtGallery360</h1>
-    <p class="subtitle">Galerie interactive — explore le monde, une peinture à la fois</p>
+    <h1 class="brand-title">Sovereign Gallery</h1>
+   <!-- <p class="subtitle"> La Quintessence de l’Art</p> -->
+  </div>
+
+  <!-- Search box -->
+  <div class="searchbox">
+    <input id="searchInput" placeholder="Rechercher une œuvre…" />
+    <button id="searchBtn" class="search-icon-btn" title="Rechercher">
+      <img src="/assets/search.svg" alt="Rechercher" width="20" height="20" />
+    </button>
+  </div>
+
+  <!-- Favorites panel -->
+  <div class="fav-panel">
+    <button id="openFav" class="btn secondary">Favoris</button>
+    <div class="fav-count" id="favCount">0</div>
   </div>
 </header>
+
 
  
 <main class="main">
@@ -55,20 +70,11 @@
   </aside>
  
   <section>
-    <div class="panel" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div class="searchbox">
-        <input id="searchInput" placeholder="Rechercher une œuvre, un artiste, ex: Van Gogh, sunflower" />
-        <button id="searchBtn" class="btn">Rechercher</button>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <button id="openFav" class="btn secondary">Favoris</button>
-        <div class="fav-count" id="favCount">0</div>
-      </div>
-    </div>
+   
  
-    <div id="status" class="muted" style="margin-bottom:10px">Tapez une recherche ou cliquez sur Œuvres aléatoires</div>
     <div class="grid" id="grid"></div>
-    <div class="pager" id="pager"></div>
+<div class="pager" id="pager"></div>
+<div id="status" class="muted" style="margin-top:12px"></div>
   </section>
 </main>
  
@@ -260,7 +266,24 @@ clearFiltersBtn.onclick = ()=>{ deptSelect.value=''; hasImageCheckbox.checked=fa
 randomBtn.onclick = loadRandom; deptSelect.onchange = ()=> applyFiltersAndRender(); hasImageCheckbox.onchange = ()=> applyFiltersAndRender(); periodSelect.onchange = ()=> applyFiltersAndRender();
  
 // Init
-(async function init(){ updateFavCount(); await loadDepartments(); status.textContent='Chargement d\'une sélection...'; try{ const res = await fetchJSON(`${BASE}/search?hasImages=true&q=painting`); currentIDs = (res.objectIDs||[]).slice(0,50); await Promise.all(currentIDs.map(id=>loadObject(id).catch(()=>null))); currentPage=1; applyFiltersAndRender(); }catch(e){ status.textContent='Prêt — entrez une recherche.'; console.error(e); }})();
+(async function init() {
+    updateFavCount();
+    await loadDepartments();
+
+    status.textContent = 'Chargement de votre sélection...';
+
+    // Your chosen painting IDs
+    const homePaintingIDs = [199313, 436105, 435702,437473,437327,438417,435813];
+
+    currentIDs = homePaintingIDs;
+    loadedObjects = {};
+
+    // Load all objects
+    await Promise.all(currentIDs.map(id => loadObject(id).catch(() => null)));
+
+    currentPage = 1;
+    applyFiltersAndRender();
+})();
  
 </script>
 </body>

@@ -13,7 +13,7 @@
  
   body {
     margin: 0;
-    font-family: Inter, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-family: "Inter", sans-serif;
     background-image: url("/assets/galerie2.jpg");
     background-size: cover;
     background-repeat: no-repeat;
@@ -23,18 +23,62 @@
     -webkit-font-smoothing: antialiased;
     padding: 28px; /* you can keep it, but note it offsets content from edges */
 } 
+
  /* Header with giant centered title */
-  header{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:18px}
-  .brand-title{font-family:"Playfair Display",serif;font-size:56px;letter-spacing:0.6px;color:var(--accent);margin:0;background:linear-gradient(90deg,var(--beige),#fff 60%);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .subtitle{color:var(--muted);font-size:14px;margin:0}
- 
+  header {
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 0;           /* remove default margin */
+    padding-top: 0;   /* optional: add small padding from top */
+}
+
+/*noms de site potentiels :
+Royal Art Gallery
+
+Galerie Royale
+
+Sovereign Gallery
+
+Crown Collection
+
+Imperial Gallery
+
+Maison Royale
+
+The Regal Collection
+
+The Crowned Archive
+
+L’Œuvre Royale 
+
+The Royal Curator*/
+
+.brand-title {
+    padding-left: 80px;  
+    font-family: "Playfair Display", serif;
+    font-size: 56px;
+    letter-spacing: 2px;
+    margin: 0;  /* already zero, ensures no extra space */
+    background: linear-gradient( 90deg, #d8c29e 0%,#000000 60% );
+   -webkit-background-clip: text;
+    background-clip: text;
+    color:transparent;
+}
+
+
+
+
   /* Main layout */
-  .main{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
+  .main{padding-top:100px ;display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
   @media (max-width:980px){.main{grid-template-columns:1fr}}
  
   /* Sidebar filters */
   .sidebar{background:transparent;padding:18px}
-  .panel{background:#fff;border-radius:12px;padding:14px;border:1px solid rgba(11,11,11,0.04);box-shadow:var(--card-shadow)}
+  .panel{backdrop-filter: blur(8px);
+        background:rgba(255,255,255,0.8);border-radius:12px;padding:14px;border:1px solid rgba(11,11,11,0.04);box-shadow:none}
   .filter-group{margin-bottom:12px}
   label{display:block;font-weight:600;margin-bottom:8px}
   select,input[type=checkbox],input[type=range]{width:100%;padding:8px;border-radius:8px;border:1px solid #eee;background:#fafafa}
@@ -42,14 +86,77 @@
  
   /* Controls */
   .controls{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .searchbox{display:flex;gap:8px;align-items:center;background:transparent}
-  .searchbox input{width:440px;max-width:60vw;padding:12px 14px;border-radius:10px;border:1px solid rgba(11,11,11,0.06);font-size:15px}
-  .btn{background:var(--accent);color:#fff;border:0;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600}
-  .btn.secondary{background:transparent;color:var(--accent);border:1px solid #eee}
+  .searchbox {
+    position: fixed;       /* top-left of the page */
+    top: 50px;
+    left: 48px;
+    width: 250px;          /* adjust width */
+    display: flex;         /* input + button in a row */
+    align-items: center;
+    background: none;      /* fully transparent */
+    padding: 0;            /* remove default padding */
+    border-radius: 6px;    /* optional rounding */
+    gap: 6px;              /* space between input and button */
+    z-index: 9999;         /* on top of other content */
+}
+
+.searchbox input {
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(6px);
+    flex: 1;               /* fills available space */
+    padding: 12px 40px 12px 14px; /* right padding for button */
+    border: none;          /* remove border */
+    border-radius: 10px;
+    font-size: 15px;
+    box-sizing: border-box;
+    color: var(--accent);  
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.searchbox input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.2); /* slightly brighter on focus */
+}
+
+.search-icon-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: filter 0.2s ease;
+}
+
+.search-icon-btn img {
+    width: 20px;
+    height: 20px;
+    display: block;
+    filter: brightness(0.2); /* dark icon */
+}
+
+.search-icon-btn:hover img {
+    filter: brightness(0.5); /* brighten on hover */
+}
+
+  .btn{background:var(--accent);color:#ffffff;border:0;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn.secondary{background:transparent;color:var(--accent);border:0}
  
   /* Gallery */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
-  .card{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #f3f3f0;box-shadow:0 8px 18px rgba(11,11,11,0.06);display:flex;flex-direction:column}
+  .card{background:#ffffffd3;border-radius:12px;overflow:hidden;border:none;box-shadow: 0 4px 20px rgba(0,0,0,0.06);display:flex;flex-direction:column}
+  .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+
+  
   .thumb {
     width: 100%;
     aspect-ratio: 1 / 1; /* make all thumbnails square */
@@ -62,12 +169,15 @@
 .thumb img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* fills the square, crops if necessary */
+    object-fit: cover;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-radius: inherit; 
 }
 
   .meta{padding: 6px;display:flex;flex-direction:column;gap:8px}
   .title{font-family:"Playfair Display",serif;font-size:16px;margin:0}
-  .subtitle{font-size:13px;color:var(--muted)}
+  .subtitle{margin-top:0 ;font-size:13px;color:var(--muted)}
   .meta .actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
  
   /* Pagination */
@@ -75,7 +185,7 @@
   .pager button{padding:8px 10px;border-radius:8px;border:1px solid #eee;background:#fff;cursor:pointer}
  
   /* Favorites */
-  .fav-count{background:var(--accent);color:#fff;padding:6px 10px;border-radius:999px;font-weight:700}
+  .fav-count{background:none;color:#000000;padding:6px 10px;border-radius:999px;font-weight:2}
  
   /* Modal */
   .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;place-items:center;padding:36px;z-index:60}
@@ -87,3 +197,31 @@
   /* small utility */
   .muted{color:var(--muted)}
  
+.fav-panel {
+    position: fixed;
+    top: 50px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: none;      /* no background */
+    padding: 0;             /* remove extra white space around button */
+    border-radius: 0;       /* optional: remove rounding if desired */
+    box-shadow: none;
+    z-index: 9999;
+}
+
+header .panel {
+    top: 2px;
+    background: none;       /* remove white background */
+    border-radius: 0;       /* remove rounded corners */
+    padding: 0;             /* remove internal spacing */
+    border: none;           /* remove that thin gray line */
+    box-shadow: none;
+}
+
+#status {
+  font-size: 13px;
+  opacity: 0.6;
+  text-align: center;
+}
