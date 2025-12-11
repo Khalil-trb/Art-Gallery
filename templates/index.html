@@ -126,7 +126,7 @@
  
 <script>
 const BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 8;
 let currentIDs = [];
 let loadedObjects = {};
 let currentPage = 1;
@@ -273,7 +273,7 @@ randomBtn.onclick = loadRandom; deptSelect.onchange = ()=> applyFiltersAndRender
     status.textContent = 'Chargement de votre sélection...';
 
     // Your chosen painting IDs
-    const homePaintingIDs = [199313, 436105, 435702,437473,437327,438417,435813,204758,204812,193628,250748,248146,24320,24671,22364,23939,22239,24693];
+    const homePaintingIDs = [199313, 436105, 435702,437473,437327,438417,436532,435813,204758,204812,193628,250748,248146,24320,24671,22364,23939,22239,24693];
 
     currentIDs = homePaintingIDs;
     loadedObjects = {};
