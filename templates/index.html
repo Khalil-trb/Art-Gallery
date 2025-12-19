@@ -11,26 +11,19 @@
 <header>
   <div class="header-content">
     <h1 class="brand-title">Sovereign Gallery</h1>
-   <!-- <p class="subtitle"> La Quintessence de l’Art</p> -->
   </div>
 
   <!-- Search box -->
   <div class="searchbox">
-    <input id="searchInput" placeholder="Rechercher une œuvre…" />
-    <button id="searchBtn" class="search-icon-btn" title="Rechercher">
-      <img src="/assets/search.svg" alt="Rechercher" width="20" height="20" />
-    </button>
-  </div>
-
-  <!-- Favorites panel -->
-  <div class="fav-panel">
-    <button id="openFav" class="btn secondary">Favoris</button>
-    <div class="fav-count" id="favCount">0</div>
+    <form method="GET" action="/search">
+      <input name="q" placeholder="Rechercher une œuvre…" value="{{.Query}}" />
+      <button type="submit" class="search-icon-btn" title="Rechercher">
+        <img src="/assets/search.svg" alt="Rechercher" width="20" height="20" />
+      </button>
+    </form>
   </div>
 </header>
 
-
- 
 <main class="main">
   <aside class="sidebar">
     <div class="panel">
@@ -38,254 +31,76 @@
         <div style="font-weight:700">Filtres</div>
         <div class="small">Affinez les résultats</div>
       </div>
- 
+
       <div class="filter-group">
         <label for="deptSelect">Département</label>
-        <select id="deptSelect"><option value="">Tous</option></select>
+        <form method="GET" action="/search">
+          <select name="department" id="deptSelect" onchange="this.form.submit()">
+            <option value="">Tous</option>
+            {{range .Departments}}
+              <option value="{{.DepartmentID}}" {{if eq $.SelectedDept .DepartmentID}}selected{{end}}>{{.DisplayName}}</option>
+            {{end}}
+          </select>
+        </form>
       </div>
- 
+
       <div class="filter-group">
-        <label>Options</label>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="checkbox" id="hasImage" /> <label for="hasImage" class="small">Avec image</label>
-        </div>
+        <label>Période</label>
+        <form method="GET" action="/search">
+          <select name="period" id="periodSelect" onchange="this.form.submit()">
+            <option value="">Toutes</option>
+            <option value="before1500" {{if eq .SelectedPeriod "before1500"}}selected{{end}}>Avant 1500</option>
+            <option value="1500-1800" {{if eq .SelectedPeriod "1500-1800"}}selected{{end}}>1500 — 1800</option>
+            <option value="after1800" {{if eq .SelectedPeriod "after1800"}}selected{{end}}>Après 1800</option>
+          </select>
+        </form>
       </div>
- 
-      <div class="filter-group">
-        <label for="periodSelect">Période</label>
-        <select id="periodSelect">
-          <option value="">Toutes</option>
-          <option value="before1500">Avant 1500</option>
-          <option value="1500-1800">1500 — 1800</option>
-          <option value="after1800">Après 1800</option>
-        </select>
-      </div>
- 
+
       <div style="display:flex;gap:8px;margin-top:10px">
-        <button id="clearFilters" class="btn secondary">Réinitialiser</button>
-        <button id="randomBtn" class="btn">Œuvres aléatoires</button>
+        <a href="/" class="btn secondary">Réinitialiser</a>
+        <a href="/random" class="btn">Œuvres aléatoires</a>
       </div>
- 
     </div>
   </aside>
- 
+
   <section>
-   
- 
-    <div class="grid" id="grid"></div>
-<div class="pager" id="pager"></div>
-<div id="status" class="muted" style="margin-top:12px"></div>
+    <div class="grid">
+      {{if .Objects}}
+        {{range .Objects}}
+        <article class="card">
+          <div class="thumb">
+            {{if .PrimaryImageSmall}}
+              <img src="{{.PrimaryImageSmall}}" alt="{{.Title}}">
+            {{else}}
+              <div style="padding:20px;color:var(--muted)">Pas d'image</div>
+            {{end}}
+          </div>
+          <div class="meta">
+            <div>
+              <div class="title">{{.Title}}</div>
+              <div class="subtitle">{{.ArtistDisplayName}} • {{.ObjectDate}}</div>
+            </div>
+          </div>
+        </article>
+        {{end}}
+      {{else}}
+        <p>Aucun résultat.</p>
+      {{end}}
+    </div>
+
+    <!-- Pager -->
+    <div class="pager">
+      {{if gt .TotalPages 1}}
+        {{if gt .CurrentPage 1}}
+          <a href="?q={{.Query}}&page={{sub .CurrentPage 1}}">← Préc.</a>
+        {{end}}
+        Page {{.CurrentPage}} / {{.TotalPages}}
+        {{if lt .CurrentPage .TotalPages}}
+          <a href="?q={{.Query}}&page={{add .CurrentPage 1}}">Suiv. →</a>
+        {{end}}
+      {{end}}
+    </div>
   </section>
 </main>
- 
-<!-- Modal détail -->
-<div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
-  <div class="modal" role="document">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <h2 id="modalTitle" style="margin:0;font-family:'Playfair Display',serif"></h2>
-        <div id="modalSub" class="small"></div>
-      </div>
-      <div>
-        <button id="modalFavBtn" class="btn">Ajouter</button>
-        <button id="modalClose" class="close">✕</button>
-      </div>
-    </div>
-    <div style="height:12px"></div>
-    <div class="modal-grid">
-      <div>
-        <img id="modalImg" alt="Image oeuvre" />
-      </div>
-      <div>
-        <div style="font-size:14px;color:var(--muted);margin-bottom:12px">
-          <div><strong>Artiste:</strong> <span id="modalArtist"></span></div>
-          <div><strong>Date:</strong> <span id="modalDate"></span></div>
-          <div><strong>Département:</strong> <span id="modalDept"></span></div>
-          <div style="margin-top:8px"><strong>Accès image:</strong> <span id="modalCredit"></span></div>
-        </div>
-        <div id="modalDesc" style="white-space:pre-wrap;font-size:14px;color:#222"></div>
-      </div>
-    </div>
-  </div>
-</div>
- 
-<!-- Favoris modal -->
-<div id="favModal" class="modal-backdrop" style="display:none;z-index:61">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2 style="margin:0;font-family:'Playfair Display',serif">Vos favoris</h2>
-      <div>
-        <button id="clearAllFavs" class="btn secondary">Vider</button>
-        <button id="closeFavModal" class="close">✕</button>
-      </div>
-    </div>
-    <div style="height:12px"></div>
-    <div id="favList"></div>
-  </div>
-</div>
- 
-<script>
-const BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
-const ITEMS_PER_PAGE = 6;
-let currentIDs = [];
-let loadedObjects = {};
-let currentPage = 1;
-let totalPages = 0;
-let departments = [];
-let currentQuery = "";
- 
-// DOM
-const searchInput = document.getElementById("searchInput");
-const searchBtn = document.getElementById("searchBtn");
-const grid = document.getElementById("grid");
-const pager = document.getElementById("pager");
-const status = document.getElementById("status");
-const deptSelect = document.getElementById("deptSelect");
-const hasImageCheckbox = document.getElementById("hasImage");
-const periodSelect = document.getElementById("periodSelect");
-const clearFiltersBtn = document.getElementById("clearFilters");
-const randomBtn = document.getElementById("randomBtn");
-const favCount = document.getElementById("favCount");
-const openFav = document.getElementById("openFav");
- 
-// Modal elements
-const modalBackdrop = document.getElementById("modal");
-const modalTitle = document.getElementById("modalTitle");
-const modalSub = document.getElementById("modalSub");
-const modalImg = document.getElementById("modalImg");
-const modalArtist = document.getElementById("modalArtist");
-const modalDate = document.getElementById("modalDate");
-const modalDept = document.getElementById("modalDept");
-const modalDesc = document.getElementById("modalDesc");
-const modalCredit = document.getElementById("modalCredit");
-const modalClose = document.getElementById("modalClose");
-const modalFavBtn = document.getElementById("modalFavBtn");
- 
-// Favorites modal
-const favModal = document.getElementById("favModal");
-const favList = document.getElementById("favList");
-const closeFavModal = document.getElementById("closeFavModal");
-const clearAllFavs = document.getElementById("clearAllFavs");
- 
-// Favorites localStorage helpers
-function getFavorites(){try{return JSON.parse(localStorage.getItem("ag_favorites")||"[]")}catch(e){return []}}
-function saveFavorites(arr){localStorage.setItem("ag_favorites", JSON.stringify(arr)); updateFavCount();}
-function isFavorited(id){return getFavorites().includes(String(id));}
-function toggleFavorite(id, objectData){let favs=getFavorites().map(String);const sid=String(id);if(favs.includes(sid)){favs=favs.filter(x=>x!==sid);saveFavorites(favs);}else{favs.push(sid);saveFavorites(favs);loadedObjects[sid]=objectData||loadedObjects[sid]||null;}}
-function updateFavCount(){favCount.textContent = getFavorites().length}
- 
-// API helpers
-async function fetchJSON(url){const resp=await fetch(url);if(!resp.ok) throw new Error('network');return resp.json();}
- 
-async function loadDepartments(){try{const d=await fetchJSON(`${BASE}/departments`);departments=d.departments||[];departments.forEach(dep=>{const opt=document.createElement('option');opt.value=dep.departmentId;opt.textContent=dep.displayName;deptSelect.appendChild(opt);});}catch(e){console.error(e);}}
- 
-// Search
-async function doSearch(query){currentQuery=query?.trim();if(!currentQuery){status.textContent='Entrez un mot-clé (ex: Monet, portrait)';return}status.textContent='Recherche...';grid.innerHTML='';currentPage=1;loadedObjects={};try{const url=`${BASE}/search?q=${encodeURIComponent(currentQuery)}`;const res=await fetchJSON(url);currentIDs=res.objectIDs||[];if(!currentIDs||currentIDs.length===0){status.textContent='Aucun résultat.';pager.innerHTML='';return;}status.textContent=`${currentIDs.length} résultats trouvés — chargement des images...`; // preload first 200 to make filters responsive
-const toPreload=currentIDs.slice(0,200);
-await Promise.all(toPreload.map(id=>loadObject(id).catch(()=>null)));
-applyFiltersAndRender();}catch(e){console.error(e);status.textContent='Erreur lors de la recherche.'}}
- 
-async function loadObject(id){const sid=String(id); if(loadedObjects[sid]) return loadedObjects[sid]; try{const data=await fetchJSON(`${BASE}/objects/${sid}`);loadedObjects[sid]=data;return data;}catch(e){loadedObjects[sid]=null;return null}}
- 
-function applyFiltersAndRender() {
-    const filtered = [];
-
-    for (const id of currentIDs) {
-        const obj = loadedObjects[id];
-        if (!obj) continue; // skip if not loaded
-
-        // Skip objects with no image
-        if (!obj.primaryImage && !obj.primaryImageSmall) continue;
-
-        // Existing filters
-        if (deptSelect.value && String(obj.departmentId) !== String(deptSelect.value)) continue;
-
-        const p = periodSelect.value;
-        if (p) {
-            const begin = obj.objectBeginDate || -9999;
-            const end = obj.objectEndDate || begin;
-            if (p === 'before1500' && end >= 1500) continue;
-            if (p === '1500-1800' && (begin > 1800 || end < 1500)) continue;
-            if (p === 'after1800' && begin <= 1800) continue;
-        }
-
-        filtered.push(id);
-    }
-
-    if (filtered.length === 0) {
-        status.textContent = 'Aucun résultat avec image.';
-        grid.innerHTML = '';
-        pager.innerHTML = '';
-        return;
-    }
-
-    totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
-    renderPage(filtered, currentPage);
-}
-
- 
-async function renderPage(filteredIds, page){grid.innerHTML=''; const start=(page-1)*ITEMS_PER_PAGE; const pageIds=filteredIds.slice(start,start+ITEMS_PER_PAGE);
-await Promise.all(pageIds.map(id=>loadObject(id).catch(()=>null)));
-for(const id of pageIds){const obj = loadedObjects[id] || {}; const card=document.createElement('article');card.className='card'; const imgSrc = obj.primaryImageSmall || obj.primaryImage || ''; card.innerHTML = `
-<div class="thumb">${imgSrc?`<img src="${imgSrc}" alt="${escapeHtml(obj.title||'')}">`:`<div style="padding:20px;color:var(--muted)">Pas d'image</div>`}</div>
-<div class="meta">
-<div><div class="title">${escapeHtml(obj.title||'Titre inconnu')}</div>
-<div class="subtitle">${escapeHtml(obj.artistDisplayName||'Artiste inconnu')} • ${escapeHtml(obj.objectDate||'')}</div></div>
-<div class="actions"><div><button data-id="${id}" class="btn viewBtn">Voir</button></div>
-<div><button data-id="${id}" class="btn secondary favBtn">${isFavorited(id)?'Retirer':'Favori'}</button></div></div></div>`;
-grid.appendChild(card);
-}
-renderPager(filteredIds.length, page);
-status.textContent = `Affichage ${start+1} — ${Math.min(start+pageIds.length, filteredIds.length)} sur ${filteredIds.length} résultats.`;
-document.querySelectorAll('.viewBtn').forEach(b=>b.onclick=async()=>{await openModalWithId(b.dataset.id)});
-document.querySelectorAll('.favBtn').forEach(b=>b.onclick=async()=>{const id=b.dataset.id; const obj=loadedObjects[id]||await loadObject(id).catch(()=>null); toggleFavorite(id,obj); b.textContent = isFavorited(id)?'Retirer':'Favori';}); }
- 
-function renderPager(totalItems,page){pager.innerHTML=''; totalPages = Math.ceil(totalItems/ITEMS_PER_PAGE)||1; const prev=document.createElement('button'); prev.textContent='← Préc.'; prev.disabled = page<=1; prev.onclick=()=>{currentPage=Math.max(1,page-1); applyFiltersAndRender();}; pager.appendChild(prev);
-const maxButtons=7; let start=Math.max(1, page-Math.floor(maxButtons/2)); let end=Math.min(totalPages, start+maxButtons-1); if(end-start<maxButtons-1) start = Math.max(1, end-maxButtons+1);
-for(let p=start;p<=end;p++){const btn=document.createElement('button'); btn.textContent=p; btn.disabled=p===page; btn.onclick=()=>{currentPage=p; applyFiltersAndRender();}; pager.appendChild(btn);} const next=document.createElement('button'); next.textContent='Suiv. →'; next.disabled=page>=totalPages; next.onclick=()=>{currentPage=Math.min(totalPages,page+1); applyFiltersAndRender();}; pager.appendChild(next);}
- 
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[m]); }
- 
-async function openModalWithId(id){const obj = loadedObjects[id] || await loadObject(id).catch(()=>null); if(!obj){ alert('Détails indisponibles.'); return; } modalTitle.textContent = obj.title || 'Titre inconnu'; modalSub.textContent = `${obj.artistDisplayName || 'Artiste inconnu'} — ${obj.objectDate || ''}`; modalImg.src = obj.primaryImage || obj.primaryImageSmall || ''; modalArtist.textContent = obj.artistDisplayName || '—'; modalDate.textContent = obj.objectDate || '—'; modalDept.textContent = obj.department || '—'; modalDesc.textContent = obj.creditLine || obj.medium || ''; modalCredit.textContent = obj.isPublicDomain ? 'Open Access' : 'Droits'; modalFavBtn.textContent = isFavorited(id)?'Retirer des favoris':'Ajouter aux favoris'; modalFavBtn.onclick = ()=>{ toggleFavorite(id,obj); modalFavBtn.textContent = isFavorited(id)?'Retirer des favoris':'Ajouter aux favoris'; }; modalBackdrop.style.display='grid'; modalBackdrop.setAttribute('aria-hidden','false'); }
- 
-modalClose.onclick=()=>{modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true');}; modalBackdrop.onclick=(e)=>{ if(e.target===modalBackdrop) modalBackdrop.style.display='none'; };
- 
-openFav.onclick=()=>{ renderFavorites(); favModal.style.display='grid'; favModal.setAttribute('aria-hidden','false'); };
-closeFavModal.onclick=()=>{ favModal.style.display='none'; favModal.setAttribute('aria-hidden','true'); };
-clearAllFavs.onclick=()=>{ if(confirm('Vider tous les favoris ?')){ saveFavorites([]); renderFavorites(); } };
- 
-async function renderFavorites(){ favList.innerHTML=''; const favs=getFavorites(); if(favs.length===0){ favList.innerHTML=`<div class='small' style='padding:18px'>Aucun favori.</div>`; updateFavCount(); return;} await Promise.all(favs.map(id=>loadObject(id).catch(()=>null))); favs.forEach(id=>{ const obj=loadedObjects[id]||{}; const el=document.createElement('div'); el.style.display='flex'; el.style.gap='12px'; el.style.alignItems='center'; el.style.padding='12px 0'; el.style.borderBottom='1px solid #f3f3f0'; el.innerHTML = `<div style='width:90px;flex:0 0 90px;border-radius:6px;overflow:hidden;background:#f7f7f7'>${obj.primaryImageSmall?`<img src='${obj.primaryImageSmall}' style='width:100%;height:100%;object-fit:cover' alt=''>`:`<div style='padding:14px;color:var(--muted)'>Pas d'image</div>`}</div><div style='flex:1'><div style='font-weight:600'>${escapeHtml(obj.title||'Titre')}</div><div class='small'>${escapeHtml(obj.artistDisplayName||'Artiste')}</div></div><div style='display:flex;gap:8px'><button class='btn openFavItem' data-id='${id}'>Voir</button><button class='btn secondary remFavItem' data-id='${id}'>Suppr.</button></div>`; favList.appendChild(el); }); document.querySelectorAll('.openFavItem').forEach(b=>b.onclick=async()=>{ favModal.style.display='none'; await openModalWithId(b.dataset.id); }); document.querySelectorAll('.remFavItem').forEach(b=>b.onclick=()=>{ const id=b.dataset.id; let arr=getFavorites(); arr=arr.filter(x=>x!==id); saveFavorites(arr); renderFavorites(); }); updateFavCount(); }
- 
-// Random artworks
-async function loadRandom(){ status.textContent='Chargement d\'œuvres aléatoires…'; try{ const data = await fetchJSON(`${BASE}/objects`); const all = data.objectIDs || []; const picked=[]; const max = Math.min(200, all.length); while(picked.length < 80){ const i = Math.floor(Math.random()*all.length); const id = all[i]; if(!picked.includes(id)) picked.push(id); if(picked.length>=max) break; } currentIDs = picked; loadedObjects = {}; await Promise.all(picked.map(id=>loadObject(id).catch(()=>null))); currentPage=1; applyFiltersAndRender(); }catch(e){console.error(e);status.textContent='Impossible de charger œuvres aléatoires.'}}
- 
-// Events
-searchBtn.onclick = ()=> doSearch(searchInput.value);
-searchInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSearch(searchInput.value); });
-clearFiltersBtn.onclick = ()=>{ deptSelect.value=''; hasImageCheckbox.checked=false; periodSelect.value=''; applyFiltersAndRender(); };
-randomBtn.onclick = loadRandom; deptSelect.onchange = ()=> applyFiltersAndRender(); hasImageCheckbox.onchange = ()=> applyFiltersAndRender(); periodSelect.onchange = ()=> applyFiltersAndRender();
- 
-// Init
-(async function init() {
-    updateFavCount();
-    await loadDepartments();
-
-    status.textContent = 'Chargement de votre sélection...';
-
-    // Your chosen painting IDs
-    const homePaintingIDs = [199313, 436105, 435702,437473,437327,438417,435813,204758,204812,193628,250748,248146,24320,24671,22364,23939,22239,24693];
-
-    currentIDs = homePaintingIDs;
-    loadedObjects = {};
-
-    // Load all objects
-    await Promise.all(currentIDs.map(id => loadObject(id).catch(() => null)));
-
-    currentPage = 1;
-    applyFiltersAndRender();
-})();
- 
-</script>
 </body>
 </html>
- 

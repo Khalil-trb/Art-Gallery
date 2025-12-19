@@ -10,8 +10,14 @@ import (
 func New() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// Home page (serve index.html from templates)
+	// Home page
 	mux.HandleFunc("/", controller.Index)
+
+	// Search page (with filters & pagination)
+	mux.HandleFunc("/search", controller.SearchHandler)
+
+	// Random artworks
+	mux.HandleFunc("/random", controller.RandomHandler)
 
 	// Serve static assets (CSS, JS, images)
 	mux.Handle("/assets/",
@@ -19,13 +25,5 @@ func New() *http.ServeMux {
 			http.FileServer(http.Dir("./assets")),
 		),
 	)
-
-	// Serve templates (HTML)
-	mux.Handle("/templates/",
-		http.StripPrefix("/templates/",
-			http.FileServer(http.Dir("./templates")),
-		),
-	)
-
 	return mux
 }
