@@ -2,28 +2,26 @@ package router
 
 import (
 	"net/http"
-
-	"Art-Gallery/controller"
+	
+	// CHECK YOUR GO.MOD FOR THE CORRECT IMPORT PATH
+	"Art-Gallery/controller" 
 )
 
-// New returns a fully configured router
 func New() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// Home page
+	// 1. Static Assets (CSS, Images)
+	fs := http.FileServer(http.Dir("assets"))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
+
+	// 2. HTML Page
 	mux.HandleFunc("/", controller.Index)
 
-	// Search page (with filters & pagination)
-	mux.HandleFunc("/search", controller.SearchHandler)
+	// 3. API Routes
+	mux.HandleFunc("/api/departments", controller.HandleDepartments)
+	mux.HandleFunc("/api/search", controller.HandleSearch)
+	mux.HandleFunc("/api/objects", controller.HandleObjects)
+	mux.HandleFunc("/api/object/", controller.HandleObject)
 
-	// Random artworks
-	mux.HandleFunc("/random", controller.RandomHandler)
-
-	// Serve static assets (CSS, JS, images)
-	mux.Handle("/assets/",
-		http.StripPrefix("/assets/",
-			http.FileServer(http.Dir("./assets")),
-		),
-	)
 	return mux
 }
