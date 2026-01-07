@@ -1,23 +1,20 @@
 package router
 
 import (
-	"net/http"
-	
-	// CHECK YOUR GO.MOD FOR THE CORRECT IMPORT PATH
-	"Art-Gallery/controller" 
-)
+	"Art-Gallery/controller"
+	"net/http")
 
 func New() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	// 1. Static Assets (CSS, Images)
+	// CSS + Images
 	fs := http.FileServer(http.Dir("assets"))
 	mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
-	// 2. HTML Page
+	// 2. HTML
 	mux.HandleFunc("/", controller.Index)
 
-	// 3. API Routes
+	// 3. Routes des API
 	mux.HandleFunc("/api/departments", controller.HandleDepartments)
 	mux.HandleFunc("/api/search", controller.HandleSearch)
 	mux.HandleFunc("/api/objects", controller.HandleObjects)
