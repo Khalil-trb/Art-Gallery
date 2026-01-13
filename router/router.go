@@ -1,24 +1,26 @@
 package router
 
 import (
-	"Art-Gallery/controller"
-	"net/http")
+    "Art-Gallery/controller"
+    "net/http"
+)
 
 func New() *http.ServeMux {
-	mux := http.NewServeMux()
+    mux := http.NewServeMux()
 
-	// CSS + Images
-	fs := http.FileServer(http.Dir("assets"))
-	mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
+    // 1. Static Assets (CSS, JS, Images)
+    // Make sure your CSS/JS files are in a folder named "assets"
+    fs := http.FileServer(http.Dir("assets"))
+    mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
-	// 2. HTML
-	mux.HandleFunc("/", controller.Index)
+    // 2. HTML Page
+    mux.HandleFunc("/", controller.Index)
 
-	// 3. Routes des API
-	mux.HandleFunc("/api/departments", controller.HandleDepartments)
-	mux.HandleFunc("/api/search", controller.HandleSearch)
-	mux.HandleFunc("/api/objects", controller.HandleObjects)
-	mux.HandleFunc("/api/object/", controller.HandleObject)
+    // 3. API Routes
+    mux.HandleFunc("/api/departments", controller.HandleDepartments) // Filters dropdown
+    mux.HandleFunc("/api/search", controller.HandleSearch)           // Search + Date Filter
+    mux.HandleFunc("/api/random", controller.HandleRandom)           // NEW: Smart Random Selection
+    mux.HandleFunc("/api/object/", controller.HandleObject)          // Single Object Details
 
-	return mux
+    return mux
 }
