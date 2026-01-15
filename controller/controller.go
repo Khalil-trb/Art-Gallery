@@ -13,7 +13,7 @@ import (
 
 const MetBaseURL = "https://collectionapi.metmuseum.org/public/collection/v1"
 
-// --- STRUCTURES ---
+// STRUCTURES 
 type Object struct {
 	ObjectID          int    `json:"objectID"`
 	Title             string `json:"title"`
@@ -31,7 +31,7 @@ type SearchResponse struct {
 	ObjectIDs []int `json:"objectIDs"`
 }
 
-// --- HELPER FUNCTIONS ---
+
 
 func fetchJSON(url string, target interface{}) error {
 	client := &http.Client{Timeout: 15 * time.Second}
@@ -72,7 +72,7 @@ func fetchObjectsDetails(ids []int) []Object {
 	return objects
 }
 
-// --- CONTROLLER HANDLERS ---
+//  CONTROLLER HANDLERS 
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/index.html")
@@ -92,7 +92,7 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("\n🔍 NEW SEARCH: '%s'\n", query)
 
-	// 1. Get IDs
+	// Get IDs
 	searchURL := fmt.Sprintf("%s/search?q=%s&hasImages=true", MetBaseURL, url.QueryEscape(query))
 	if dept != "" {
 		searchURL += fmt.Sprintf("&departmentId=%s", dept)
@@ -105,7 +105,7 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 2. Handle "No Results" (API returns null objectIDs)
+	//  "No Results" 
 	if searchResp.Total == 0 || len(searchResp.ObjectIDs) == 0 {
 		fmt.Println("⚠️ API found 0 results.")
 		json.NewEncoder(w).Encode([]Object{})
@@ -114,16 +114,16 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("✅ API found %d IDs. Processing top 15...\n", searchResp.Total)
 
-	// 3. Limit to 15 items (Safe number)
+	//Limite a 15 items 
 	limit := 15
 	if len(searchResp.ObjectIDs) < limit {
 		limit = len(searchResp.ObjectIDs)
 	}
 
-	// 4. Fetch Details
+	//Fetch Details
 	loadedObjects := fetchObjectsDetails(searchResp.ObjectIDs[:limit])
 
-	// 5. Filter Dates
+	// Filtre les Dates
 	var finalResults []Object
 	for _, obj := range loadedObjects {
 		match := true
@@ -156,9 +156,9 @@ func HandleRandom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Println("\n🎲 Fetching Random...")
 
-	// Search for "Paintings" to get a pool of IDs
+	
 	var allObjects SearchResponse
-	// Search for something broad to get random IDs
+	
 	fetchJSON(MetBaseURL+"/search?q=painting&hasImages=true", &allObjects)
 
 	if len(allObjects.ObjectIDs) == 0 {

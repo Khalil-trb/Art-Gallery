@@ -77,7 +77,7 @@
   </section>
 </main>
  
-<!-- Modal détail -->
+<!--  détails des modeles -->
 <div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
   <div class="modal" role="document">
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -108,7 +108,7 @@
   </div>
 </div>
  
-<!-- Favoris modal -->
+<!--  modeles favoris -->
 <div id="favModal" class="modal-backdrop" style="display:none;z-index:61">
   <div class="modal">
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -161,13 +161,13 @@ const modalCredit = document.getElementById("modalCredit");
 const modalClose = document.getElementById("modalClose");
 const modalFavBtn = document.getElementById("modalFavBtn");
  
-// Favorites modal
+
 const favModal = document.getElementById("favModal");
 const favList = document.getElementById("favList");
 const closeFavModal = document.getElementById("closeFavModal");
 const clearAllFavs = document.getElementById("clearAllFavs");
  
-// Favorites localStorage helpers
+
 function getFavorites(){try{return JSON.parse(localStorage.getItem("ag_favorites")||"[]")}catch(e){return []}}
 function saveFavorites(arr){localStorage.setItem("ag_favorites", JSON.stringify(arr)); updateFavCount();}
 function isFavorited(id){return getFavorites().includes(String(id));}
@@ -179,7 +179,7 @@ async function fetchJSON(url){const resp=await fetch(url);if(!resp.ok) throw new
  
 async function loadDepartments(){try{const d=await fetchJSON(`${BASE}/departments`);departments=d.departments||[];departments.forEach(dep=>{const opt=document.createElement('option');opt.value=dep.departmentId;opt.textContent=dep.displayName;deptSelect.appendChild(opt);});}catch(e){console.error(e);}}
  
-// Search - CORRIGÉ ✅
+// rechercher
 async function doSearch(query){
     currentQuery=query?.trim();
     if(!currentQuery){
@@ -229,13 +229,12 @@ function applyFiltersAndRender() {
 
     for (const id of currentIDs) {
         const obj = loadedObjects[id];
-        if (!obj) continue; // skip if not loaded
+        if (!obj) continue; 
 
         // Skip objects with no image
         if (!obj.primaryImage && !obj.primaryImageSmall) continue;
 
-        // Note: Les filtres période et département sont déjà appliqués côté backend
-        // Mais on peut garder le filtre département côté client pour la réactivité
+      
 
         filtered.push(id);
     }
@@ -284,7 +283,7 @@ clearAllFavs.onclick=()=>{ if(confirm('Vider tous les favoris ?')){ saveFavorite
  
 async function renderFavorites(){ favList.innerHTML=''; const favs=getFavorites(); if(favs.length===0){ favList.innerHTML=`<div class='small' style='padding:18px'>Aucun favori.</div>`; updateFavCount(); return;} await Promise.all(favs.map(id=>loadObject(id).catch(()=>null))); favs.forEach(id=>{ const obj=loadedObjects[id]||{}; const el=document.createElement('div'); el.style.display='flex'; el.style.gap='12px'; el.style.alignItems='center'; el.style.padding='12px 0'; el.style.borderBottom='1px solid #f3f3f0'; el.innerHTML = `<div style='width:90px;flex:0 0 90px;border-radius:6px;overflow:hidden;background:#f7f7f7'>${obj.primaryImageSmall?`<img src='${obj.primaryImageSmall}' style='width:100%;height:100%;object-fit:cover' alt=''>`:`<div style='padding:14px;color:var(--muted)'>Pas d'image</div>`}</div><div style='flex:1'><div style='font-weight:600'>${escapeHtml(obj.title||'Titre')}</div><div class='small'>${escapeHtml(obj.artistDisplayName||'Artiste')}</div></div><div style='display:flex;gap:8px'><button class='btn openFavItem' data-id='${id}'>Voir</button><button class='btn secondary remFavItem' data-id='${id}'>Suppr.</button></div>`; favList.appendChild(el); }); document.querySelectorAll('.openFavItem').forEach(b=>b.onclick=async()=>{ favModal.style.display='none'; await openModalWithId(b.dataset.id); }); document.querySelectorAll('.remFavItem').forEach(b=>b.onclick=()=>{ const id=b.dataset.id; let arr=getFavorites(); arr=arr.filter(x=>x!==id); saveFavorites(arr); renderFavorites(); }); updateFavCount(); }
  
-// Oeuvres aléatoires - CORRIGÉ ✅
+// Les oeuvres aleatoires
 async function loadRandom(){ 
     status.textContent='Chargement d\'œuvres aléatoires…'; 
     grid.innerHTML='';
@@ -292,7 +291,7 @@ async function loadRandom(){
     loadedObjects={};
     
     try{ 
-        // Appelle le endpoint /random qui retourne directement des objets
+        
         const objects = await fetchJSON(`${BASE}/random`);
         
         if(!objects || objects.length === 0){
@@ -313,26 +312,26 @@ async function loadRandom(){
     }
 }
  
-// Events
+
 searchBtn.onclick = ()=> doSearch(searchInput.value);
 searchInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter') doSearch(searchInput.value); });
 clearFiltersBtn.onclick = ()=>{ deptSelect.value=''; hasImageCheckbox.checked=false; periodSelect.value=''; applyFiltersAndRender(); };
 randomBtn.onclick = loadRandom; 
 deptSelect.onchange = ()=> { 
-    // Si on est en mode recherche, relancer la recherche avec les nouveaux filtres
+   
     if(currentQuery) {
         doSearch(currentQuery);
     }
 }; 
 hasImageCheckbox.onchange = ()=> applyFiltersAndRender(); 
 periodSelect.onchange = ()=> {
-    // Si on est en mode recherche, relancer la recherche avec les nouveaux filtres
+
     if(currentQuery) {
         doSearch(currentQuery);
     }
 };
  
-// Init
+
 (async function init() {
     updateFavCount();
     await loadDepartments();
