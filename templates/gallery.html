@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sovereign Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <h1 class="brand-title">Sovereign Gallery</h1>
+  </div>
+
+  <!-- Formulaire de recherche (envoi au serveur) -->
+  <div class="searchbox">
+    <form action="/search" method="GET">
+      <input name="q" placeholder="Rechercher une œuvre…" value="{{.Query}}" />
+      <button type="submit" class="search-icon-btn" title="Rechercher">
+        <img src="/assets/search.svg" alt="Rechercher" width="20" height="20" />
+      </button>
+    </form>
+  </div>
+</header>
+
+<main class="main">
+  <aside class="sidebar">
+    <div class="panel">
+      <div style="font-weight:700;margin-bottom:12px">Filtres</div>
+
+      <form action="/search" method="GET">
+        <input type="hidden" name="q" value="{{.Query}}" />
+        
+        <div class="filter-group">
+          <label for="dept">Département</label>
+          <select name="dept" id="dept">
+            <option value="">Tous</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="period">Période</label>
+          <select name="period" id="period">
+            <option value="">Toutes</option>
+            <option value="before1500">Avant 1500</option>
+            <option value="1500-1800">1500 — 1800</option>
+            <option value="after1800">Après 1800</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn">Appliquer</button>
+      </form>
+
+      <div style="margin-top:10px">
+        <a href="/random" class="btn">Œuvres aléatoires</a>
+      </div>
+    </div>
+  </aside>
+
+  <section>
+    {{if .Objects}}
+      <div class="grid">
+        {{range .Objects}}
+        <article class="card">
+          <div class="thumb">
+            {{if .PrimaryImageSmall}}
+              <img src="{{.PrimaryImageSmall}}" alt="{{.Title}}">
+            {{else if .PrimaryImage}}
+              <img src="{{.PrimaryImage}}" alt="{{.Title}}">
+            {{else}}
+              <div style="padding:20px;color:#888">Pas d'image</div>
+            {{end}}
+          </div>
+          <div class="meta">
+            <div class="title">{{.Title}}</div>
+            <div class="subtitle">{{.ArtistDisplayName}} • {{.ObjectDate}}</div>
+            <div class="actions">
+              <a href="/object/{{.ObjectID}}" class="btn">détails</a>
+            </div>
+          </div>
+        </article>
+        {{end}}
+      </div>
+<div class="pagination">
+    {{if gt .TotalPages 1}}
+        {{range $i := iterate .TotalPages}}
+            <a href="/?page={{$i}}"
+               class="{{if eq $.CurrentPage $i}}active{{end}}">
+                {{$i}}
+            </a>
+        {{end}}
+    {{end}}
+</div>
+
+
+      <div class="muted" style="text-align:center;margin-top:12px">
+        {{.TotalResult}} résultats trouvés
+      </div>
+
+    {{else}}
+      <div style="text-align:center;padding:40px">
+        <p>Aucun résultat trouvé.</p>
+      </div>
+    {{end}}
+  </section>
+</main>
+
+</body>
+</html>

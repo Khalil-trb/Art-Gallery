@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>{{.Title}} - Sovereign Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+    --beige:#f3e9db;
+    --cream:#fffaf3;
+    --bg:#ffffff;
+    --muted:#6b6b6b;
+    --accent:#0b0b0b;
+    --gold:#cbb48a;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+
+body {
+    font-family: "Inter", sans-serif;
+    background-image: url("/assets/galerie2.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    color: var(--accent);
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    padding: 40px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.title {
+    font-family: "Playfair Display", serif;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(90deg, #d8c29e 0%, #000000 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.subtitle {
+    font-size: 18px;
+    color: var(--muted);
+    margin-top: 8px;
+}
+
+.btn {
+    background: var(--accent);
+    color: #ffffff;
+    border: 0;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.btn.secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+}
+
+.content {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 40px;
+    margin-top: 24px;
+}
+
+@media (max-width: 980px) {
+    .content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.image-container {
+    width: 100%;
+    background: linear-gradient(180deg, #f8f6f1, #fff);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.details {
+    background: #fafafa;
+    padding: 24px;
+    border-radius: 12px;
+}
+
+.detail-item {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.detail-value {
+    font-size: 16px;
+    color: var(--accent);
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 24px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <a href="/" class="back-link">← Retour à la galerie</a>
+    
+    <div class="header">
+        <div>
+            <h1 class="title">{{if .Title}}{{.Title}}{{else}}Titre inconnu{{end}}</h1>
+            <p class="subtitle">
+                {{if .ArtistDisplayName}}{{.ArtistDisplayName}}{{else}}Artiste inconnu{{end}}
+                {{if .ObjectDate}} • {{.ObjectDate}}{{end}}
+            </p>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="image-container">
+            {{if .PrimaryImage}}
+                <img src="{{.PrimaryImage}}" alt="{{.Title}}">
+            {{else if .PrimaryImageSmall}}
+                <img src="{{.PrimaryImageSmall}}" alt="{{.Title}}">
+            {{else}}
+                <div style="padding:40px;color:#888;text-align:center">
+                    <p>Aucune image disponible</p>
+                </div>
+            {{end}}
+        </div>
+
+        <div class="details">
+            <h2 style="font-family:'Playfair Display',serif;margin-top:0">Informations</h2>
+            
+            <div class="detail-item">
+                <div class="detail-label">Artiste</div>
+                <div class="detail-value">{{if .ArtistDisplayName}}{{.ArtistDisplayName}}{{else}}Inconnu{{end}}</div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Date</div>
+                <div class="detail-value">{{if .ObjectDate}}{{.ObjectDate}}{{else}}Non spécifiée{{end}}</div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Département</div>
+                <div class="detail-value">{{if .Department}}{{.Department}}{{else}}Non spécifié{{end}}</div>
+            </div>
+
+            {{if .ObjectBeginDate}}
+            <div class="detail-item">
+                <div class="detail-label">Période</div>
+                <div class="detail-value">
+                    {{.ObjectBeginDate}}{{if .ObjectEndDate}}{{if ne .ObjectBeginDate .ObjectEndDate}} - {{.ObjectEndDate}}{{end}}{{end}}
+                </div>
+            </div>
+            {{end}}
+
+            <div class="detail-item">
+                <div class="detail-label">ID Objet</div>
+                <div class="detail-value">#{{.ObjectID}}</div>
+            </div>
+
+            <div style="margin-top:24px">
+                <a href="/" class="btn">Retour à la galerie</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

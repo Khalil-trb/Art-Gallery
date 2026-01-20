@@ -8,19 +8,18 @@ import (
 func New() *http.ServeMux {
     mux := http.NewServeMux()
 
-    // 1. Static Assets (CSS, JS, Images)
-    // Make sure your CSS/JS files are in a folder named "assets"
+    // Static Assets
     fs := http.FileServer(http.Dir("assets"))
     mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
-    // 2. HTML Page
+    // Pages HTML (plus d'API JSON)
     mux.HandleFunc("/", controller.Index)
-
-    // 3. API Routes
-    mux.HandleFunc("/api/departments", controller.HandleDepartments) // Filters dropdown
-    mux.HandleFunc("/api/search", controller.HandleSearch)           // Search + Date Filter
-    mux.HandleFunc("/api/random", controller.HandleRandom)           // NEW: Smart Random Selection
-    mux.HandleFunc("/api/object/", controller.HandleObject)          // Single Object Details
+    mux.HandleFunc("/search", controller.HandleSearch)
+    mux.HandleFunc("/random", controller.HandleRandom)
+    mux.HandleFunc("/object/", controller.HandleObject)
+    
+    // Garde seulement pour le dropdown
+    mux.HandleFunc("/api/departments", controller.HandleDepartments)
 
     return mux
 }

@@ -143,7 +143,7 @@ The Royal Curator*/
     filter: brightness(0.5); 
   }
 
-  .btn{background:var(--accent);color:#ffffff;border:0;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn{background:var(--accent);color:#ffffff;border:0;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:600;font-size: 10px;text-decoration: none;}
   .btn.secondary{background:transparent;color:var(--accent);border:0}
  
  
@@ -176,7 +176,7 @@ The Royal Curator*/
 
   .meta{padding: 6px;display:flex;flex-direction:column;gap:8px}
   .title{font-family:"Playfair Display",serif;font-size:16px;margin:0}
-  .subtitle{margin-top:0 ;font-size:13px;color:var(--muted)}
+  .subtitle{margin-top:0 ;font-size:15px;color:var(--muted)}
   .meta .actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
  
  
