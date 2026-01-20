@@ -37,13 +37,13 @@ func fetchJSON(url string, target interface{}) error {
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Get(url)
 	if err != nil {
-		fmt.Printf("❌ Network Error: %v\n", err)
+		fmt.Printf(" Network Error: %v\n", err)
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		fmt.Printf("❌ API returned status %d for %s\n", resp.StatusCode, url)
+		fmt.Printf("API returned status %d for %s\n", resp.StatusCode, url)
 		return fmt.Errorf("status %d", resp.StatusCode)
 	}
 
@@ -68,7 +68,7 @@ func fetchObjectsDetails(ids []int) []Object {
 			}
 		}
 	}
-	fmt.Println("\n✅ Fetch complete.")
+	fmt.Println("\n Fetch complete.")
 	return objects
 }
 
@@ -154,7 +154,7 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 func HandleRandom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Println("\n🎲 Fetching Random...")
+	fmt.Println("\n Fetching Random...")
 
 	
 	var allObjects SearchResponse
