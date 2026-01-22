@@ -9,10 +9,30 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
-// STRUCTURES 
+// API
+const MetBaseURL = "https://collectionapi.metmuseum.org/public/collection/v1"
+
+// numero unique pour communiquer avec le musée 
+var client = &http.Client{
+	Timeout: 15 * time.Second,
+	Transport: &http.Transport{
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90 * time.Second,
+	},
+}
+
+// SYSTÈME DE CACHE
+var (
+	objectCache = make(map[int]Object)
+	cacheMutex  sync.RWMutex
+)
+
+// STRUCTURES
 type Object struct {
 	ObjectID          int    `json:"objectID"`
 	Title             string `json:"title"`
@@ -38,22 +58,14 @@ type PageData struct {
 	TotalPages  int
 }
 
-// API
-const MetBaseURL = "https://collectionapi.metmuseum.org/public/collection/v1"
-
 func fetchJSON(url string, target interface{}) error {
-	client := &http.Client{Timeout: 15 * time.Second}
-	
-	// Créer une requête avec User-Agent
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
-	
-	// Ajouter un User-Agent pour éviter le blocage 403
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-	req.Header.Set("Accept", "application/json")
-	
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36")
+
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Printf(" Network Error: %v\n", err)
@@ -62,40 +74,62 @@ func fetchJSON(url string, target interface{}) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		fmt.Printf("API returned status %d for %s\n", resp.StatusCode, url)
+		if resp.StatusCode == 403 {
+			fmt.Println("BLOCAGE API (403) - Attendre 1 minute...")
+		}
 		return fmt.Errorf("status %d", resp.StatusCode)
 	}
 
 	return json.NewDecoder(resp.Body).Decode(target)
 }
 
+// FONCTION MODIFIÉE AVEC CACHE
 func fetchObjectsDetails(ids []int) []Object {
 	var objects []Object
+	var idsToFetch []int
 
-	fmt.Printf(" Fetching details for %d items...\n", len(ids))
-
+	// ÉTAPE 1 : Verification du cache
 	for _, id := range ids {
+		cacheMutex.RLock()
+		cachedObj, found := objectCache[id]
+		cacheMutex.RUnlock()
+
+		if found {
+			objects = append(objects, cachedObj)
+		} else {
+			idsToFetch = append(idsToFetch, id)
+		}
+	}
+
+	if len(idsToFetch) == 0 {
+		return objects
+	}
+
+	fmt.Printf("Fetching %d items from API (Found %d in cache)...\n", len(idsToFetch), len(objects))
+	for _, id := range idsToFetch {
 		var obj Object
 		url := fmt.Sprintf("%s/objects/%d", MetBaseURL, id)
-		
-		// Augmenter le délai entre requêtes pour éviter le blocage
-		time.Sleep(200 * time.Millisecond)
+
+		time.Sleep(300 * time.Millisecond)
 
 		if err := fetchJSON(url, &obj); err == nil {
 			if obj.PrimaryImage != "" || obj.PrimaryImageSmall != "" {
 				objects = append(objects, obj)
+				cacheMutex.Lock()
+				objectCache[id] = obj
+				cacheMutex.Unlock()
+
 				fmt.Print(".")
 			}
 		} else {
-			fmt.Printf("\n Erreur pour ID %d: %v\n", id, err)
+			fmt.Printf("x")
 		}
 	}
-	fmt.Println("\n✓ Fetch complete.")
+	fmt.Println("\n✓ Done.")
 	return objects
 }
 
-//  RENDU HTML CÔTÉ SERVEUR 
-
+// RENDU HTML CÔTÉ SERVEUR
 
 var funcMap = template.FuncMap{
 	"sub": func(a, b int) int { return a - b },
@@ -109,7 +143,7 @@ var funcMap = template.FuncMap{
 	},
 }
 
-// Oeuvres dans la page d'acceuil
+// Page d'accueil
 func Index(w http.ResponseWriter, r *http.Request) {
 	homePaintingIDs := []int{
 		199313, 436105, 435702, 437473, 437327, 438417,
@@ -117,8 +151,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		248146, 24320, 24671, 22364, 23939, 22239,
 		24693, 446653, 446273, 22871, 22506, 24960,
 	}
-
-	// Pagination
 	const perPage = 8
 	page := 1
 
@@ -142,6 +174,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	if end > totalResults {
 		end = totalResults
 	}
+	if start < 0 {
+		start = 0
+	}
+
 	pageIDs := homePaintingIDs[start:end]
 	objects := fetchObjectsDetails(pageIDs)
 
@@ -161,7 +197,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-// HandleSearch - Recherche avec rendu HTML
+// HandleSearch
 func HandleSearch(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 	dept := r.URL.Query().Get("dept")
@@ -177,7 +213,6 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("\n🔍 SEARCH: '%s' (page %d)\n", query, page)
 
-	// Construction de l'URL de recherche
 	searchURL := fmt.Sprintf("%s/search?q=%s&hasImages=true", MetBaseURL, url.QueryEscape(query))
 	if dept != "" {
 		searchURL += fmt.Sprintf("&departmentId=%s", dept)
@@ -194,7 +229,6 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Limiter à 50 résultats max
 	limit := 50
 	if len(searchResp.ObjectIDs) < limit {
 		limit = len(searchResp.ObjectIDs)
@@ -202,7 +236,6 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 	loadedObjects := fetchObjectsDetails(searchResp.ObjectIDs[:limit])
 
-	// Filtrer par période
 	var finalResults []Object
 	for _, obj := range loadedObjects {
 		match := true
@@ -227,11 +260,14 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Pagination
 	itemsPerPage := 12
 	totalPages := (len(finalResults) + itemsPerPage - 1) / itemsPerPage
+
 	if page > totalPages && totalPages > 0 {
 		page = totalPages
+	}
+	if totalPages == 0 {
+		page = 1
 	}
 
 	start := (page - 1) * itemsPerPage
@@ -240,7 +276,10 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		end = len(finalResults)
 	}
 
-	pageObjects := finalResults[start:end]
+	var pageObjects []Object
+	if start < len(finalResults) {
+		pageObjects = finalResults[start:end]
+	}
 
 	data := PageData{
 		Objects:     pageObjects,
@@ -258,7 +297,7 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-// HandleRandom - Œuvres aléatoires avec rendu HTML
+// Oeuvres aleatoires
 func HandleRandom(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("\n Fetching Random...")
 
@@ -273,9 +312,19 @@ func HandleRandom(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	randomIDs := make([]int, 0)
 
-	for len(randomIDs) < 12 {
+	maxItems := 12
+	if len(allObjects.ObjectIDs) < 12 {
+		maxItems = len(allObjects.ObjectIDs)
+	}
+
+	usedIndices := make(map[int]bool)
+
+	for len(randomIDs) < maxItems {
 		idx := rand.Intn(len(allObjects.ObjectIDs))
-		randomIDs = append(randomIDs, allObjects.ObjectIDs[idx])
+		if !usedIndices[idx] {
+			usedIndices[idx] = true
+			randomIDs = append(randomIDs, allObjects.ObjectIDs[idx])
+		}
 	}
 
 	results := fetchObjectsDetails(randomIDs)
@@ -295,19 +344,41 @@ func HandleRandom(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-// Détails d'une œuvre (rendu HTML)
+// Objets
 func HandleObject(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 3 {
 		http.Error(w, "Invalid URL", 400)
 		return
 	}
-	id := parts[len(parts)-1]
+	// Récupère l'ID depuis l'URL
+	idStr := parts[len(parts)-1]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID invalide", 400)
+		return
+	}
+
+	// VERIFICATION CACHE (Optimisation)
+	cacheMutex.RLock()
+	cachedObj, found := objectCache[id]
+	cacheMutex.RUnlock()
 
 	var obj Object
-	if err := fetchJSON(fmt.Sprintf("%s/objects/%s", MetBaseURL, id), &obj); err != nil {
-		http.Error(w, "Object not found", 404)
-		return
+	if found {
+		// Recuperer depuis le cache
+		obj = cachedObj
+		fmt.Println(" Objet récupéré depuis le cache !")
+	} else {
+		// Sinon on télécharge
+		if err := fetchJSON(fmt.Sprintf("%s/objects/%d", MetBaseURL, id), &obj); err != nil {
+			http.Error(w, "Object not found", 404)
+			return
+		}
+		// Et on sauvegarde
+		cacheMutex.Lock()
+		objectCache[id] = obj
+		cacheMutex.Unlock()
 	}
 
 	tmpl, err := template.ParseFiles("templates/object.html")
@@ -318,9 +389,9 @@ func HandleObject(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, obj)
 }
 
-// Departments
+// Departements
 func HandleDepartments(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get(MetBaseURL + "/departments")
+	resp, err := client.Get(MetBaseURL + "/departments")
 	if err != nil {
 		return
 	}
@@ -331,7 +402,6 @@ func HandleDepartments(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(data)
 }
 
-// Helpers pour rendu d'erreur
 func renderError(w http.ResponseWriter, message string) {
 	w.WriteHeader(500)
 	fmt.Fprintf(w, "<h1>Erreur</h1><p>%s</p>", message)
