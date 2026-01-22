@@ -5,16 +5,302 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Sovereign Gallery</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/style.css">
+<style>
+:root{
+    --beige:#f3e9db;
+    --cream:#fffaf3;
+    --bg:#ffffff;
+    --muted:#6b6b6b;
+    --accent:#0b0b0b;
+    --gold:#cbb48a;
+    --card-shadow: 0 8px 24px rgba(11,11,11,0.06);
+    --gap:18px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    background-image: url("/assets/galerie2.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    color: var(--accent);
+    -webkit-font-smoothing: antialiased;
+    padding: 28px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 0;
+    position: relative;
+}
+
+.brand-title {
+    font-family: "Playfair Display", serif;
+    font-size: 56px;
+    letter-spacing: 2px;
+    margin: 0;
+    background: linear-gradient(90deg, #d8c29e 0%, #000000 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    flex: 1;
+    text-align: center;
+}
+
+.searchbox {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 250px;
+    display: flex;
+    align-items: center;
+    background: none;
+    padding: 0;
+    border-radius: 6px;
+    gap: 6px;
+    z-index: 10;
+}
+
+.searchbox form {
+    width: 100%;
+    position: relative;
+    display: flex;
+}
+
+.searchbox input {
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(6px);
+    flex: 1;
+    padding: 12px 40px 12px 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    box-sizing: border-box;
+    color: var(--accent);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    width: 100%;
+}
+
+.searchbox input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.search-icon-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-icon-btn img {
+    width: 20px;
+    height: 20px;
+    display: block;
+    filter: brightness(0.2);
+}
+
+.search-icon-btn:hover img {
+    filter: brightness(0.5);
+}
+
+.main{
+    padding-top: 20px;
+    display:grid;
+    grid-template-columns:320px 1fr;
+    gap:24px;
+    align-items:start
+}
+
+@media (max-width:980px){
+    .main{grid-template-columns:1fr}
+}
+
+.sidebar{background:transparent;padding:18px}
+
+.panel{
+    backdrop-filter: blur(8px);
+    background:rgba(255,255,255,0.8);
+    border-radius:12px;
+    padding:14px;
+    border:1px solid rgba(11,11,11,0.04);
+    box-shadow:none
+}
+
+.filter-group{margin-bottom:12px}
+
+label{display:block;font-weight:600;margin-bottom:8px}
+
+select, input[type=text] {
+    width:100%;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid #eee;
+    background:#fafafa;
+}
+
+.small{font-size:13px;color:var(--muted)}
+
+.btn{
+    background:var(--accent);
+    color:#ffffff;
+    border:0;
+    padding:9px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn.secondary{
+    background:transparent;
+    color:var(--accent);
+    border:1px solid var(--accent);
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:18px
+}
+
+.card{
+    background:#ffffffd3;
+    border-radius:12px;
+    overflow:hidden;
+    border:none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    display:flex;
+    flex-direction:column
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+.thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg,#f8f6f1,#fff);
+}
+
+.thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+}
+
+.meta{
+    padding: 12px;
+    display:flex;
+    flex-direction:column;
+    gap:8px
+}
+
+.title{
+    font-family:"Playfair Display",serif;
+    font-size:16px;
+    margin:0;
+    font-weight: 700;
+}
+
+.subtitle{
+    margin-top:0;
+    font-size:13px;
+    color:var(--muted)
+}
+
+.meta .actions{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:8px
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+}
+
+.pagination a {
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(8px);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--accent);
+    font-weight: 600;
+    border: 1px solid rgba(11,11,11,0.1);
+    transition: all 0.2s;
+}
+
+.pagination a:hover {
+    background: rgba(203,180,138,0.2);
+    border-color: var(--gold);
+}
+
+.pagination a.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.muted{
+    color:var(--muted);
+    text-align: center;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+}
+
+.empty-state h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+</style>
 </head>
 <body>
 
 <header>
-  <div class="header-content">
-    <h1 class="brand-title">Sovereign Gallery</h1>
-  </div>
-
-  <!-- Formulaire de recherche (envoi au serveur) -->
   <div class="searchbox">
     <form action="/search" method="GET">
       <input name="q" placeholder="Rechercher une œuvre…" value="{{.Query}}" />
@@ -23,23 +309,18 @@
       </button>
     </form>
   </div>
+
+  <h1 class="brand-title">Sovereign Gallery</h1>
 </header>
 
 <main class="main">
   <aside class="sidebar">
     <div class="panel">
-      <div style="font-weight:700;margin-bottom:12px">Filtres</div>
+      <div style="font-weight:700;margin-bottom:16px">Filtres</div>
 
       <form action="/search" method="GET">
         <input type="hidden" name="q" value="{{.Query}}" />
         
-        <div class="filter-group">
-          <label for="dept">Département</label>
-          <select name="dept" id="dept">
-            <option value="">Tous</option>
-          </select>
-        </div>
-
         <div class="filter-group">
           <label for="period">Période</label>
           <select name="period" id="period">
@@ -50,11 +331,15 @@
           </select>
         </div>
 
-        <button type="submit" class="btn">Appliquer</button>
+        <button type="submit" class="btn" style="width:100%;margin-top:8px">Appliquer les filtres</button>
       </form>
 
-      <div style="margin-top:10px">
-        <a href="/random" class="btn">Œuvres aléatoires</a>
+      <div style="margin-top:12px">
+        <a href="/random" class="btn secondary" style="width:100%;text-align:center">Œuvres aléatoires</a>
+      </div>
+      
+      <div style="margin-top:8px">
+        <a href="/" class="btn secondary" style="width:100%;text-align:center">Accueil</a>
       </div>
     </div>
   </aside>
@@ -75,33 +360,43 @@
           </div>
           <div class="meta">
             <div class="title">{{.Title}}</div>
-            <div class="subtitle">{{.ArtistDisplayName}} • {{.ObjectDate}}</div>
+            <div class="subtitle">
+              {{if .ArtistDisplayName}}{{.ArtistDisplayName}}{{else}}Artiste inconnu{{end}}
+              {{if .ObjectDate}} • {{.ObjectDate}}{{end}}
+            </div>
             <div class="actions">
-              <a href="/object/{{.ObjectID}}" class="btn">détails</a>
+              <a href="/object/{{.ObjectID}}" class="btn">Voir détails</a>
             </div>
           </div>
         </article>
         {{end}}
       </div>
-<div class="pagination">
-    {{if gt .TotalPages 1}}
+
+      {{if gt .TotalPages 1}}
+      <div class="pagination">
         {{range $i := iterate .TotalPages}}
-            <a href="/?page={{$i}}"
-               class="{{if eq $.CurrentPage $i}}active{{end}}">
-                {{$i}}
-            </a>
+          <a href="/?page={{$i}}" class="{{if eq $.CurrentPage $i}}active{{end}}">
+            {{$i}}
+          </a>
         {{end}}
-    {{end}}
-</div>
+      </div>
+      {{end}}
 
-
-      <div class="muted" style="text-align:center;margin-top:12px">
-        {{.TotalResult}} résultats trouvés
+      <div class="muted">
+        Page {{.CurrentPage}} sur {{.TotalPages}} • {{.TotalResult}} œuvre{{if ne .TotalResult 1}}s{{end}} au total
       </div>
 
     {{else}}
-      <div style="text-align:center;padding:40px">
-        <p>Aucun résultat trouvé.</p>
+      <div class="empty-state">
+        <h2>Aucun résultat</h2>
+        <p class="small">
+          {{if .Query}}
+            Aucune œuvre trouvée pour "{{.Query}}"
+          {{else}}
+            Utilisez la barre de recherche pour explorer la collection
+          {{end}}
+        </p>
+        <a href="/" class="btn" style="margin-top:16px">Retour à l'accueil</a>
       </div>
     {{end}}
   </section>

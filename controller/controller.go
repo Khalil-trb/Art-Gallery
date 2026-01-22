@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-const MetBaseURL = "https://collectionapi.metmuseum.org/public/collection/v1"
-
 // STRUCTURES 
 type Object struct {
 	ObjectID          int    `json:"objectID"`
@@ -39,6 +37,9 @@ type PageData struct {
 	CurrentPage int
 	TotalPages  int
 }
+
+// API
+const MetBaseURL = "https://collectionapi.metmuseum.org/public/collection/v1"
 
 func fetchJSON(url string, target interface{}) error {
 	client := &http.Client{Timeout: 15 * time.Second}
@@ -71,7 +72,7 @@ func fetchJSON(url string, target interface{}) error {
 func fetchObjectsDetails(ids []int) []Object {
 	var objects []Object
 
-	fmt.Printf("⏳ Fetching details for %d items...\n", len(ids))
+	fmt.Printf(" Fetching details for %d items...\n", len(ids))
 
 	for _, id := range ids {
 		var obj Object
@@ -108,7 +109,7 @@ var funcMap = template.FuncMap{
 	},
 }
 
-// Index - Page d'accueil avec œuvres par défaut
+// Oeuvres dans la page d'acceuil
 func Index(w http.ResponseWriter, r *http.Request) {
 	homePaintingIDs := []int{
 		199313, 436105, 435702, 437473, 437327, 438417,
@@ -259,7 +260,7 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 
 // HandleRandom - Œuvres aléatoires avec rendu HTML
 func HandleRandom(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("\n🎲 Fetching Random...")
+	fmt.Println("\n Fetching Random...")
 
 	var allObjects SearchResponse
 	fetchJSON(MetBaseURL+"/search?q=painting&hasImages=true", &allObjects)
@@ -294,7 +295,7 @@ func HandleRandom(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-// HandleObject - Détails d'une œuvre (rendu HTML)
+// Détails d'une œuvre (rendu HTML)
 func HandleObject(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 3 {
@@ -317,7 +318,7 @@ func HandleObject(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, obj)
 }
 
-// HandleDepartments - API JSON (garde pour le dropdown)
+// Departments
 func HandleDepartments(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get(MetBaseURL + "/departments")
 	if err != nil {
